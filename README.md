@@ -11,5 +11,6 @@
 - https://docs.platformio.org/en/latest/boards/ststm32/nucleo_wl55jc.html
 - https://github.com/platformio/platform-ststm32/blob/develop/boards/nucleo_wl55jc.json
 - https://docs.zephyrproject.org/2.7.0/boards/arm/lora_e5_dev_board/doc/lora_e5_dev_board.html
+- https://doc.riot-os.org/group__boards__lora-e5-dev.html
 
 - https://www.st.com/en/development-tools/stm32cubeprog.html

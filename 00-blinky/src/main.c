@@ -1,4 +1,3 @@
-void _exit(){}
 
 int main(void)
 {
