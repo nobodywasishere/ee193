@@ -1,0 +1,6 @@
+/ {
+    zephyr,user {
+        io-channels = <&adc1 11>;
+        io-channel-names = "SENSOR";
+    };
+};
