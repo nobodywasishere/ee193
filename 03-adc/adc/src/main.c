@@ -7,6 +7,33 @@
 #include <zephyr.h>
 #include <sys/printk.h>
 #include <drivers/adc.h>
+#include <drivers/gpio.h>
+
+/*
+
+#include <zephyr.h>
+#include <drivers/gpio.h>
+#define SLEEP_TIME_MS   1000
+
+void main(void)
+{
+	
+  	int dev = device_get_binding("GPIOB");
+	int ret = gpio_pin_configure(dev, 10, GPIO_OUTPUT);
+
+	while (1) {
+		ret = gpio_pin_toggle(dev, 10);
+		if (ret < 0) {
+			return;
+		}
+		// k_msleep(SLEEP_TIME_MS);
+	}
+}
+
+
+*/
+
+// ADC stuff
 
 #if !DT_NODE_EXISTS(DT_PATH(zephyr_user)) || \
 	!DT_NODE_HAS_PROP(DT_PATH(zephyr_user), io_channels)
@@ -67,13 +94,19 @@ struct adc_sequence sequence = {
 	.resolution  = ADC_RESOLUTION,
 };
 
+// gpio stuff
+
 void main(void)
 {
-	int err;
+	int err = 0;
 	const struct device *dev_adc = DEVICE_DT_GET(ADC_NODE);
 
-	if (!device_is_ready(dev_adc)) {
-		printk("ADC device not found\n");
+	const struct device *d9_dev = device_get_binding("GPIOA");
+	int d9_ret = gpio_pin_configure(d9_dev, 9, GPIO_OUTPUT);
+
+	if (!device_is_ready(dev_adc))
+	{
+		printk("ADC device not found or device not ready\n");
 		return;
 	}
 
@@ -93,35 +126,43 @@ void main(void)
 
 	int32_t adc_vref = adc_ref_internal(dev_adc);
 
+
+	int i = 0;
 	while (1) {
-		/*
-		 * Read sequence of channels (fails if not supported by MCU)
-		 */
-		err = adc_read(dev_adc, &sequence);
-		if (err != 0) {
-			printk("ADC reading failed with error %d.\n", err);
-			return;
-		}
+		for (i = 0; i < 100; i++) {
+			/*
+			* Read sequence of channels (fails if not supported by MCU)
+			*/
+			// err = adc_read(dev_adc, &sequence);
+			if (err != 0) {
+				printk("ADC reading failed with error %d.\n", err);
+				return;
+			}
 
-		printk("ADC reading:");
-		for (uint8_t i = 0; i < ADC_NUM_CHANNELS; i++) {
-			int32_t raw_value = sample_buffer[i];
+			// printk("ADC reading:");
+			for (uint8_t i = 0; i < ADC_NUM_CHANNELS; i++) {
+				int32_t raw_value = sample_buffer[i];
 
-			printk(" %d", raw_value);
-			if (adc_vref > 0) {
-				/*
-				 * Convert raw reading to millivolts if driver
-				 * supports reading of ADC reference voltage
-				 */
-				int32_t mv_value = raw_value;
+				// printk(" %d", raw_value);
+				if (adc_vref > 0) {
+					/*
+					* Convert raw reading to millivolts if driver
+					* supports reading of ADC reference voltage
+					*/
+					int32_t mv_value = raw_value;
 
-				adc_raw_to_millivolts(adc_vref, ADC_GAIN,
-					ADC_RESOLUTION, &mv_value);
-				printk(" = %d mV  ", mv_value);
+					adc_raw_to_millivolts(adc_vref, ADC_GAIN,
+						ADC_RESOLUTION, &mv_value);
+					// printk(" = %d mV  ", mv_value);
+				}
 			}
 		}
-		printk("\n");
+		// printk("\n");
 
-		k_sleep(K_MSEC(1000));
+		d9_ret = gpio_pin_toggle(d9_dev, 9);
+		if (d9_ret < 0)
+		{
+			return;
+		}
 	}
 }
