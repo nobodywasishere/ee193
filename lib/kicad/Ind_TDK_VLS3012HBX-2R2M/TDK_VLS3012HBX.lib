@@ -1,0 +1,45 @@
+EESchema-LIBRARY Version 2.4
+#encoding utf-8
+#
+# TDK VLS3012HBX-2R2M
+#
+DEF VLS3012HBX-2R2M L 0 40 Y Y 1 L N
+F0 "L" 0 200 50 H V L CNN 
+F1 "VLS3012HBX-2R2M" 0 300 50 H V L CNN 
+F2 "TDK-VLS3012HBX-0-0-*" 0 400 50 H I L CNN 
+F3 "https://product.tdk.com/info/en/catalog/datasheets/inductor_commercial_power_vls3012hbx_en.pdf" 0 500 50 H I L CNN 
+F4 "3.35A" 0 600 50 H I L CNN "RMS current"
+F5 "No" 0 700 50 H I L CNN "automotive"
+F6 "Ind" 0 800 50 H I L CNN "category"
+F7 "Wirewound" 0 900 50 H I L CNN "composition"
+F8 "Metal" 0 1000 50 H I L CNN "core material"
+F9 "Passive Components" 0 1100 50 H I L CNN "device class L1"
+F10 "Inductors" 0 1200 50 H I L CNN "device class L2"
+F11 "Fixed Inductors" 0 1300 50 H I L CNN "device class L3"
+F12 "FIXED IND 2.2UH 3.15A 106 MOHM" 0 1400 50 H I L CNN "digikey description"
+F13 "445-175069-1-ND" 0 1500 50 H I L CNN "digikey part number"
+F14 "1.2mm" 0 1600 50 H I L CNN "height"
+F15 "2.2uH" 0 1700 50 H I L CNN "inductance"
+F16 "Yes" 0 1800 50 H I L CNN "lead free"
+F17 "3e4f848fbe737029" 0 1900 50 H I L CNN "library id"
+F18 "TDK" 0 2000 50 H I L CNN "manufacturer"
+F19 "810-VLS3012HBX-2R2M" 0 2100 50 H I L CNN "mouser part number"
+F20 "SMT_3MM0_3MM0" 0 2200 50 H I L CNN "package"
+F21 "Yes" 0 2300 50 H I L CNN "rohs"
+F22 "3.76A" 0 2400 50 H I L CNN "saturation current"
+F23 "106mΩ" 0 2500 50 H I L CNN "series resistance"
+F24 "true" 0 2600 50 H I L CNN "shielding"
+F25 "+105°C" 0 2700 50 H I L CNN "temperature range high"
+F26 "-40°C" 0 2800 50 H I L CNN "temperature range low"
+F27 "1MHz" 0 2900 50 H I L CNN "test frequency"
+F28 "20%" 0 3000 50 H I L CNN "tolerance"
+DRAW
+X 1 1 0 0 50 R 40 0 1 1 P 
+X 2 2 400 0 50 L 40 0 1 1 P 
+A 100 0 50 0 1799 1 1 0 N 150 0 50 0
+A 200 0 50 0 1799 1 1 0 N 250 0 150 0
+A 300 0 50 0 1799 1 1 0 N 350 0 250 0
+ENDDRAW
+ENDDEF
+#
+# End Library
