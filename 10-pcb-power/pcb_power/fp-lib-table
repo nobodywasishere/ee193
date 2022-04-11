@@ -1,4 +1,6 @@
 (fp_lib_table
   (lib (name "TDK_VLS3012HBX")(type "KiCad")(uri "/Users/zpogrebin/Google Drive/Other/ee193/lib/kicad/Ind_TDK_VLS3012HBX-2R2M/TDK_VLS3012HBX.pretty")(options "")(descr ""))
   (lib (name "Ind_TDK_VLS3012HBX-2R2M")(type "KiCad")(uri "/Users/zpogrebin/Google Drive/Other/ee193/lib/kicad/Ind_TDK_VLS3012HBX-2R2M.pretty")(options "")(descr ""))
+  (lib (name "footprints")(type "KiCad")(uri "/Users/zpogrebin/Google Drive/Other/ee193/lib/kicad/footprints.pretty")(options "")(descr ""))
+  (lib (name "RGB_LED")(type "KiCad")(uri "/Users/zpogrebin/Google Drive/Other/ee193/lib/kicad/LoRa-E5_kicad/RGB_LED.pretty")(options "")(descr ""))
 )
