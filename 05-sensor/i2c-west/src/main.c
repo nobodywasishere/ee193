@@ -28,7 +28,7 @@ SCL - PB15
 #define STTS751_I2C_ADDR 0x39
 #define TEMP_VAL_HIGH_REG_ADDR 0x00
 
-// #define STTS751_DEVNAME DT_LABEL(DT_INST(0, st_stts751))
+#define STTS751_DEVNAME DT_LABEL(DT_INST(0, st_stts751))
 
 #define DEV_OK 0
 
@@ -90,7 +90,7 @@ void main(void)
   // cfg.bits.is_master_device = 1;
 
   dev = device_get_binding("STTS751");
-//   printk(dev->device_config.name)
+  printk(dev->device_config.name)
   if (!dev)
   {
     printk("I2C: Device not found.\n");
