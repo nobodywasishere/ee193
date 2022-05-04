@@ -3,12 +3,3 @@
 
 	};
 };
-
-&i2c2 {
-	stts751@38 {
-		compatible = "st,stts751";
-		reg = <0x38>;
-		drdy-gpios = <&gpiob 4 GPIO_ACTIVE_LOW>;
-		label = "STTS751";
-	};
-};

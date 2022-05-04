@@ -25,7 +25,7 @@ SCL - PB15
 #include <device.h>
 #include <drivers/i2c.h>
 
-#define STTS751_I2C_ADDR 0x39
+#define STTS751_I2C_ADDR 0x48
 #define TEMP_VAL_HIGH_REG_ADDR 0x00
 
 // #define STTS751_DEVNAME DT_LABEL(DT_INST(0, st_stts751))
