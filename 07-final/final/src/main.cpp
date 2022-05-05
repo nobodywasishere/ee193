@@ -73,7 +73,7 @@ void main(void) {
             leds.black();
             
             temp = sensor.getTemperature() >> 8;
-            printk("Locl T = %dºC\n", temp);
+            printk("0 %d\n", temp);
 
             leds.red();
             
@@ -87,7 +87,7 @@ void main(void) {
             leds.blue();
             
             lora.recvMessage(msg, len);
-            printk("Recv T = %dºC\n", msg[0]);
+            // printk("Recv T = %dºC\n", msg[0]);
             
             leds.black();
             
