@@ -22,7 +22,7 @@
 //                            @@@                 @@@
 //                                &@@@@@   @@@@@%
 //
-// main.cpp
+// sleep.h
 // May 4, 2022
 //
 // ©2022 Margret Riegert, Zev Pogrebin, Caleb Weinstein-Zenner, Lili Mooney
@@ -40,61 +40,11 @@
 // limitations under the License.
 //
 
-#include <zephyr.h>
-#include <sys/printk.h>
-#include <errno.h>
-#include <sys/util.h>
+class Sleep {
 
-#define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
-#define AA_NODE_ID 4
-#include <logging/log.h>
+    private:
 
-#include "lora.h"
-#include "sensor.h"
-#include "sleep.h"
-#include "leds.h"
+    public:
 
-Sensor sensor;
-LEDControl leds;
-Lora lora;
 
-void main(void) {
-    // int retn;
-    sensor = Sensor();
-    sensor.configureDevice();
-    leds = LEDControl();
-    lora = Lora();
-
-    char msg[2] = {AA_NODE_ID, '0'};
-    uint8_t temp = 0;
-    
-    if(sensor.deviceIsReady()) {
-        while(true) {
-
-            leds.black();
-            
-            temp = sensor.getTemperature() >> 8;
-            printk("0 %d\n", temp);
-
-            leds.red();
-            
-            msg[1] = temp;
-            lora.sendMessage(msg, sizeof(msg));
-            lora.sendMessage(msg, sizeof(msg));
-            lora.sendMessage(msg, sizeof(msg));
-
-            leds.black();
-            
-            k_sleep(K_MSEC(3000));
-
-            // leds.blue();
-            
-            // lora.recvMessage(msg, len);
-            // // printk("Recv T = %dºC\n", msg[0]);
-            
-            // leds.black();
-            
-            // k_sleep(K_MSEC(1000));
-        }
-    }
-}
+};

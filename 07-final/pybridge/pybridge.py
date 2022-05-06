@@ -24,6 +24,7 @@ import time
 from typing import List, Dict, Union
 import struct
 import toml
+from pprint import pprint
 
 def dataFormatter(line: bytes, mqtt_data: Union[dict, None] = None):
     l = str(line)[2:-5].split(' ')
@@ -33,7 +34,7 @@ def dataFormatter(line: bytes, mqtt_data: Union[dict, None] = None):
     temp = int(l[1])
     if mqtt_data is not None:
         try:
-            d = mqtt_data[node]
+            d = mqtt_data['nodes'][node]
             lat = d["lat"]
             lng = d["long"]
             name = d["name"]
@@ -41,6 +42,7 @@ def dataFormatter(line: bytes, mqtt_data: Union[dict, None] = None):
             print("\033[31;1mNode Not Found!\033[0m")
             lat, lng, name = 0.0, 0.0, ""
     else: 
+        print("\033[31;1mDatabase Not Connected!\033[0m")
         lat, lng, name = 0.0, 0.0, ""
     return node, temp, lat, lng, name
 
@@ -59,8 +61,8 @@ def sendMQTTData(mqtt_cli, team, nodeID, temp, lat: float, lng: float, name):
     
     # Pack the data that we just set up
     data = struct.pack(formatd, etime, temp, sec_temp, batt, team_length, lat, lng, *name_bytes)
-    print("Packed data:", data)
     print("Unpacked data: ", struct.unpack(formatd, data))
+    print("Packed data:", data)
     mqtt_cli.publish(topic, payload=data, qos=0, retain=False)
     print("\n")
 
@@ -72,25 +74,28 @@ def connectToMQTT(client_name, host_name, host_port=1883):
 
 def main(args):
     line = b''
-    # while True:
-    # wait for data
     
     while True:
         with serial.Serial(args.port, args.baud, timeout=1) as ser:
             line = ser.readline()
-            print(f"Received data: {line}")
-
-        # process data
-        node, temp, lat, lng, name = dataFormatter(line)
-        if node is None:
-            continue
-
-        # print(f"Formatted data: {data}")
+            if len(line) > 0:
+                print(f"Received from UART: {line}")
 
         # get TOML file
         with open("data.toml","r") as datafile:
             data = toml.load(datafile)
 
+        # process data
+        node, temp, lat, lng, name = dataFormatter(line, data)
+        if node is None: 
+            continue
+
+        print(f"\n\033[33;1;4mGot a valid message from node {name}!\033[0m")
+        print(f"NodeID: \033[4m{node}\033[0m")
+        print(f"Temperature: \033[4m{temp}ºC ({temp*1.8+32}ºF)\033[0m")
+        print(f"\033[33mAppended From Database:\033[0m")
+        print(f"Location: \033[4m{lat}, {lng}\033[0m")
+        print(f"Node Name: \033[4m{name}\033[0m\n")
 
         client = connectToMQTT(args.client_name, args.server, args.server_port)
         # send data

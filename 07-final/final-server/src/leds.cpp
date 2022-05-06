@@ -22,7 +22,7 @@
 //                            @@@                 @@@
 //                                &@@@@@   @@@@@%
 //
-// main.cpp
+// leds.cpp
 // May 4, 2022
 //
 // ©2022 Margret Riegert, Zev Pogrebin, Caleb Weinstein-Zenner, Lili Mooney
@@ -40,61 +40,63 @@
 // limitations under the License.
 //
 
-#include <zephyr.h>
-#include <sys/printk.h>
-#include <errno.h>
-#include <sys/util.h>
-
-#define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
-#define AA_NODE_ID 4
-#include <logging/log.h>
-
-#include "lora.h"
-#include "sensor.h"
-#include "sleep.h"
 #include "leds.h"
 
-Sensor sensor;
-LEDControl leds;
-Lora lora;
+LEDControl::LEDControl() {
+    dev_a = device_get_binding(GPIO_A);
+    dev_b = device_get_binding(GPIO_B);
+    int ret = 0;
+    ret += gpio_pin_configure(dev_a, LED_GPIO_RED, GPIO_OUTPUT_HIGH);
+    ret += gpio_pin_configure(dev_b, LED_GPIO_GREEN, GPIO_OUTPUT_HIGH);
+    ret += gpio_pin_configure(dev_b, LED_GPIO_BLUE, GPIO_OUTPUT_HIGH);
+    ret += gpio_pin_configure(dev_b, LED_GPIO_STATUS, GPIO_OUTPUT_HIGH);
+    if(ret) printk("An error occured while attempting to initialize LEDs\n");
+}
 
-void main(void) {
-    // int retn;
-    sensor = Sensor();
-    sensor.configureDevice();
-    leds = LEDControl();
-    lora = Lora();
+void LEDControl::setLEDValues(bool red, bool green, bool blue, bool status) {
+    setLEDColors(red,green,blue);
+    setLEDStatus(status);
+}
 
-    char msg[2] = {AA_NODE_ID, '0'};
-    uint8_t temp = 0;
-    
-    if(sensor.deviceIsReady()) {
-        while(true) {
+void LEDControl::setLEDColors(bool red, bool green, bool blue)
+{
+    writeLEDGPIO(dev_a, LED_GPIO_RED, red);
+    writeLEDGPIO(dev_b, LED_GPIO_GREEN, green);
+    writeLEDGPIO(dev_b, LED_GPIO_BLUE, blue);
+}
 
-            leds.black();
-            
-            temp = sensor.getTemperature() >> 8;
-            printk("0 %d\n", temp);
+void LEDControl::setLEDStatus(bool value) {
+    writeLEDGPIO(dev_b, LED_GPIO_STATUS, value);
+}
 
-            leds.red();
-            
-            msg[1] = temp;
-            lora.sendMessage(msg, sizeof(msg));
-            lora.sendMessage(msg, sizeof(msg));
-            lora.sendMessage(msg, sizeof(msg));
+void LEDControl::writeLEDGPIO(const device* dev, int pinNumber, bool value) {
+    if(value) gpio_pin_set(dev, pinNumber, 0);
+    else      gpio_pin_set(dev, pinNumber, 1);
+}
 
-            leds.black();
-            
-            k_sleep(K_MSEC(3000));
-
-            // leds.blue();
-            
-            // lora.recvMessage(msg, len);
-            // // printk("Recv T = %dºC\n", msg[0]);
-            
-            // leds.black();
-            
-            // k_sleep(K_MSEC(1000));
-        }
-    }
+void LEDControl::debugColors() {
+    red();
+    printk("color red\n");
+    k_sleep(K_MSEC(1000));
+    green();
+    printk("color green\n");
+    k_sleep(K_MSEC(1000));
+    blue();
+    printk("color blue\n");
+    k_sleep(K_MSEC(1000));
+    cyan();
+    printk("color cyan\n");
+    k_sleep(K_MSEC(1000));
+    yellow();
+    printk("color yellow\n");
+    k_sleep(K_MSEC(1000));
+    magenta();
+    printk("color magenta\n");
+    k_sleep(K_MSEC(1000));
+    white();
+    printk("color white\n");
+    k_sleep(K_MSEC(1000));
+    black();
+    printk("color black\n");
+    k_sleep(K_MSEC(1000));
 }

@@ -22,7 +22,7 @@
 //                            @@@                 @@@
 //                                &@@@@@   @@@@@%
 //
-// main.cpp
+// leds.h
 // May 4, 2022
 //
 // ©2022 Margret Riegert, Zev Pogrebin, Caleb Weinstein-Zenner, Lili Mooney
@@ -40,61 +40,40 @@
 // limitations under the License.
 //
 
-#include <zephyr.h>
-#include <sys/printk.h>
+#include <device.h>
 #include <errno.h>
 #include <sys/util.h>
+#include <zephyr.h>
+#include <drivers/gpio.h>
 
-#define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
-#define AA_NODE_ID 4
-#include <logging/log.h>
+#define GPIO_A              "GPIOA"
+#define GPIO_B              "GPIOB"
+#define LED_GPIO_RED        10
+#define LED_GPIO_GREEN      14
+#define LED_GPIO_BLUE       9
+#define LED_GPIO_STATUS     5
 
-#include "lora.h"
-#include "sensor.h"
-#include "sleep.h"
-#include "leds.h"
+class LEDControl {
 
-Sensor sensor;
-LEDControl leds;
-Lora lora;
+    public:
+        LEDControl();
+        void setLEDValues(bool red, bool green, bool blue, bool status);
+        void setLEDColors(bool red, bool green, bool blue);
+        void setLEDStatus(bool value);
+        inline void turnLEDsOff() {setLEDValues(false,false,false,false);}
+        inline void red()       {setLEDColors( true,false,false);}
+        inline void green()     {setLEDColors(false, true,false);}
+        inline void blue()      {setLEDColors(false,false, true);}
+        inline void yellow()    {setLEDColors( true, true,false);}
+        inline void magenta()   {setLEDColors( true,false, true);}
+        inline void cyan()      {setLEDColors(false, true, true);}
+        inline void white()     {setLEDColors( true, true, true);}
+        inline void black()     {setLEDColors(false,false,false);}
+        void debugColors();
+    private:
+        void writeLEDGPIO(const device* dev, int pinNumber, bool value);
+        const device* dev_a;
+        const device* dev_b;
+};
 
-void main(void) {
-    // int retn;
-    sensor = Sensor();
-    sensor.configureDevice();
-    leds = LEDControl();
-    lora = Lora();
-
-    char msg[2] = {AA_NODE_ID, '0'};
-    uint8_t temp = 0;
-    
-    if(sensor.deviceIsReady()) {
-        while(true) {
-
-            leds.black();
-            
-            temp = sensor.getTemperature() >> 8;
-            printk("0 %d\n", temp);
-
-            leds.red();
-            
-            msg[1] = temp;
-            lora.sendMessage(msg, sizeof(msg));
-            lora.sendMessage(msg, sizeof(msg));
-            lora.sendMessage(msg, sizeof(msg));
-
-            leds.black();
-            
-            k_sleep(K_MSEC(3000));
-
-            // leds.blue();
-            
-            // lora.recvMessage(msg, len);
-            // // printk("Recv T = %dºC\n", msg[0]);
-            
-            // leds.black();
-            
-            // k_sleep(K_MSEC(1000));
-        }
-    }
-}
+// Aye Aye Sez Hi

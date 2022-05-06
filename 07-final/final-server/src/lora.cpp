@@ -22,7 +22,7 @@
 //                            @@@                 @@@
 //                                &@@@@@   @@@@@%
 //
-// main.cpp
+// lora.cpp
 // May 4, 2022
 //
 // ©2022 Margret Riegert, Zev Pogrebin, Caleb Weinstein-Zenner, Lili Mooney
@@ -40,61 +40,40 @@
 // limitations under the License.
 //
 
-#include <zephyr.h>
-#include <sys/printk.h>
-#include <errno.h>
-#include <sys/util.h>
-
-#define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
-#define AA_NODE_ID 4
-#include <logging/log.h>
-
 #include "lora.h"
-#include "sensor.h"
-#include "sleep.h"
-#include "leds.h"
 
-Sensor sensor;
-LEDControl leds;
-Lora lora;
+#define DEFAULT_RADIO_NODE DT_ALIAS(lora0)
+BUILD_ASSERT(DT_NODE_HAS_STATUS(DEFAULT_RADIO_NODE, okay),
+             "No default LoRa radio specified in DT");
 
-void main(void) {
-    // int retn;
-    sensor = Sensor();
-    sensor.configureDevice();
-    leds = LEDControl();
-    lora = Lora();
+Lora::Lora() {
+    Lora::lora_dev = DEVICE_DT_GET(DEFAULT_RADIO_NODE);
 
-    char msg[2] = {AA_NODE_ID, '0'};
-    uint8_t temp = 0;
-    
-    if(sensor.deviceIsReady()) {
-        while(true) {
-
-            leds.black();
-            
-            temp = sensor.getTemperature() >> 8;
-            printk("0 %d\n", temp);
-
-            leds.red();
-            
-            msg[1] = temp;
-            lora.sendMessage(msg, sizeof(msg));
-            lora.sendMessage(msg, sizeof(msg));
-            lora.sendMessage(msg, sizeof(msg));
-
-            leds.black();
-            
-            k_sleep(K_MSEC(3000));
-
-            // leds.blue();
-            
-            // lora.recvMessage(msg, len);
-            // // printk("Recv T = %dºC\n", msg[0]);
-            
-            // leds.black();
-            
-            // k_sleep(K_MSEC(1000));
-        }
+    if (!device_is_ready(lora_dev)) {
+        printk("%s Device not ready", lora_dev->name);
+        return;
     }
+
+    initLora();
+}
+
+int Lora::initLora() {
+    Lora::config.frequency = 865100000;
+    Lora::config.bandwidth = BW_125_KHZ;
+    Lora::config.datarate = SF_10;
+    Lora::config.preamble_len = 8;
+    Lora::config.coding_rate = CR_4_5;
+    Lora::config.tx_power = 4;
+    Lora::config.tx = true;
+    // return 0;
+    return lora_config(lora_dev, &config);
+}
+
+int Lora::sendMessage(char *msg, int len) {
+    return lora_send(lora_dev, (uint8_t *) msg, len);
+}
+
+int Lora::recvMessage(char *msg, int len) {
+    return lora_recv(lora_dev, (uint8_t *)msg, len, K_FOREVER,
+                     &rssi, &snr);
 }

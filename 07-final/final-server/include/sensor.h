@@ -22,7 +22,7 @@
 //                            @@@                 @@@
 //                                &@@@@@   @@@@@%
 //
-// main.cpp
+// sensor.h
 // May 4, 2022
 //
 // ©2022 Margret Riegert, Zev Pogrebin, Caleb Weinstein-Zenner, Lili Mooney
@@ -42,59 +42,29 @@
 
 #include <zephyr.h>
 #include <sys/printk.h>
-#include <errno.h>
-#include <sys/util.h>
+#include <device.h>
+#include <drivers/i2c.h>
 
-#define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
-#define AA_NODE_ID 4
-#include <logging/log.h>
+#pragma once
 
-#include "lora.h"
-#include "sensor.h"
-#include "sleep.h"
-#include "leds.h"
+#define TEMP_SENSE_ADDRESS 0x48
+#define CONF_PTR 1
+#define TEMP_PTR 0
 
-Sensor sensor;
-LEDControl leds;
-Lora lora;
+class Sensor {
 
-void main(void) {
-    // int retn;
-    sensor = Sensor();
-    sensor.configureDevice();
-    leds = LEDControl();
-    lora = Lora();
+    private:
+        uint32_t cfg;
+        const struct device *i2c_dev;
 
-    char msg[2] = {AA_NODE_ID, '0'};
-    uint8_t temp = 0;
-    
-    if(sensor.deviceIsReady()) {
-        while(true) {
 
-            leds.black();
-            
-            temp = sensor.getTemperature() >> 8;
-            printk("0 %d\n", temp);
-
-            leds.red();
-            
-            msg[1] = temp;
-            lora.sendMessage(msg, sizeof(msg));
-            lora.sendMessage(msg, sizeof(msg));
-            lora.sendMessage(msg, sizeof(msg));
-
-            leds.black();
-            
-            k_sleep(K_MSEC(3000));
-
-            // leds.blue();
-            
-            // lora.recvMessage(msg, len);
-            // // printk("Recv T = %dºC\n", msg[0]);
-            
-            // leds.black();
-            
-            // k_sleep(K_MSEC(1000));
-        }
-    }
-}
+    public:
+        Sensor();
+        int initDevice();
+        int configureDevice();
+        inline bool deviceIsReady() {return device_is_ready(i2c_dev);}
+        inline uint16_t getTemperature() {return getTemperature(0);}
+        uint16_t getTemperature(int resolution);
+        int sendOpcode(uint8_t oneShot);
+        int sendOpcode(int oneShot, int resolution, int shutdown);
+};
