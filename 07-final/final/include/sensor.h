@@ -48,17 +48,23 @@
 #pragma once
 
 #define TEMP_SENSE_ADDRESS 0x48
+#define CONF_PTR 1
+#define TEMP_PTR 0
 
 class Sensor {
 
     private:
         uint32_t cfg;
         const struct device *i2c_dev;
-        
+
+
     public:
         Sensor();
         int initDevice();
         int configureDevice();
         inline bool deviceIsReady() {return device_is_ready(i2c_dev);}
-        uint16_t getTemperature();
+        inline uint16_t getTemperature() {return getTemperature(0);}
+        uint16_t getTemperature(int resolution);
+        int sendOpcode(uint8_t oneShot);
+        int sendOpcode(int oneShot, int resolution, int shutdown);
 };

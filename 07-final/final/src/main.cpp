@@ -60,6 +60,7 @@ Lora lora;
 void main(void) {
     // int retn;
     sensor = Sensor();
+    sensor.configureDevice();
     leds = LEDControl();
     lora = Lora();
 

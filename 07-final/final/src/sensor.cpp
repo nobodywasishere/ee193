@@ -49,7 +49,17 @@ Sensor::Sensor() {
 // Builds the Sensor 
 int Sensor::initDevice() {
     i2c_dev = DEVICE_DT_GET(DT_NODELABEL(i2c2));
-    int deviceErr = configureDevice();
+    return 0;
+}
+
+// Configures the Temperature Sensor Device
+// Output: int, 0 if no error, 1 if error occured
+int Sensor::configureDevice() {
+    int deviceErr = 0;
+    cfg = I2C_SPEED_SET(I2C_SPEED_FAST) | I2C_MODE_MASTER;
+    if(!i2c_dev) deviceErr += 1; // no device found
+    else if(i2c_configure(i2c_dev, cfg) != 0) deviceErr += 2; // can't config device
+    // else if(sendOpcode(0,0,1)) deviceErr += 4;
     if (deviceErr==0) {
         printk("Sensor Initialized!\n");
         if(deviceIsReady()) printk("Sensor Ready!\n");
@@ -57,26 +67,43 @@ int Sensor::initDevice() {
         printk("Sensor Error %d!\n", deviceErr);
     }
     return 0;
-}
 
-// Configures the Temperature Sensor Device
-// Output: int, 0 if no error, 1 if error occured
-int Sensor::configureDevice() {
-    cfg = I2C_SPEED_SET(I2C_SPEED_FAST) | I2C_MODE_MASTER;
-    if(!i2c_dev) return 1; // no device found
-    if(i2c_configure(i2c_dev, cfg) != 0) return 2; // can't config device
-    return 0;
 }
 
 // Gets temperature from the sensor
 // Output: uint8_t temperature from sensor, 255 if error occured in temperature reading
-uint16_t Sensor::getTemperature() {
-    uint8_t retn;
-    uint8_t temph = 255; // 255 means error
-    uint8_t templ = 255; // 255 means error
-    retn = i2c_read(i2c_dev, &temph, sizeof(temph), TEMP_SENSE_ADDRESS);
-    if (retn || temph == 255) return 255;
-    retn = i2c_read(i2c_dev, &templ, sizeof(templ), TEMP_SENSE_ADDRESS);
-    if (retn || templ == 255) return 255;
-    return (temph << 8) | templ ;
+uint16_t Sensor::getTemperature(int resolution) {
+    sendOpcode(1,resolution,1);
+    k_sleep(K_MSEC(100));
+    uint8_t retn = 0;
+    uint8_t temp[2] = {255, 255}; // 255 means error
+    uint8_t tp = 255;
+    uint8_t wr = TEMP_PTR;
+    // retn += i2c_write(i2c_dev, &tp, sizeof(tp), TEMP_SENSE_ADDRESS);
+    // retn += i2c_read(i2c_dev, temp, sizeof(temp), TEMP_SENSE_ADDRESS);
+    retn += i2c_write_read(
+        i2c_dev, TEMP_SENSE_ADDRESS, 
+        &wr, sizeof(wr), 
+        temp, sizeof(temp));
+    if (retn || temp[0] == 255 || temp[1] == 255) return 255;
+    return (temp[0] << 8) | temp[1];
+}
+
+int Sensor::sendOpcode(uint8_t opcode) {
+    int retn = 0;
+    uint8_t conf[2] = {CONF_PTR, opcode};
+    retn += i2c_write(i2c_dev, conf, sizeof(conf), TEMP_SENSE_ADDRESS);
+    // i2c_write_read
+    // retn += i2c_write(i2c_dev, &opcode, sizeof(opcode), TEMP_SENSE_ADDRESS);
+    if (retn) {
+        printk("Temp read err: %d\n", retn);
+    }
+    // uint8_t tp = TEMP_PTR;
+    // retn += i2c_write(i2c_dev, &tp, sizeof(tp), TEMP_SENSE_ADDRESS);
+    return retn;
+}
+
+int Sensor::sendOpcode(int oneShot, int resolution, int shutdown) {
+    uint8_t data = oneShot << 7 | resolution << 5 | shutdown;
+    return sendOpcode(data);
 }
